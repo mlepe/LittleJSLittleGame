@@ -78,8 +78,25 @@ function gameInit() {
   // called once after the engine starts up
   // setup the game
   game.init();
-  tileLayers[0] = new LJS.TileLayer(LJS.vec2(), game.gameSize);
-  tileLayers[0].setData(LJS.vec2(), 42);
+
+  // create tile layer
+  const pos = LJS.vec2();
+  const tileLayer = new LJS.TileCollisionLayer(pos, game.size);
+  for (pos.x = tileLayer.size.x; pos.x--; )
+    for (pos.y = tileLayer.size.y; pos.y--; ) {
+      // check if tile should be solid
+      if (LJS.randBool(0.7)) continue;
+
+      // set tile data
+      const tileIndex = 42;
+      const direction = LJS.randInt(4);
+      const mirror = LJS.randBool();
+      const color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
+      const data = new LJS.TileLayerData(tileIndex, direction, mirror, color);
+      tileLayer.setData(pos, data);
+      tileLayer.setCollisionData(pos);
+    }
+  tileLayer.redraw(); // redraw tile layer with new data
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,6 +117,11 @@ function gameRender() {
   // called before objects are rendered
   // draw any background effects that appear behind objects
   game.render();
+  //tileLayers[0].drawTileData(game.center);
+  /*for (let x = game.gameSize.x; x--; )
+    for (let y = game.gameSize.y; y--; ) {
+      tileLayers[0].drawTileData(LJS.vec2(x, y));
+    }*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////

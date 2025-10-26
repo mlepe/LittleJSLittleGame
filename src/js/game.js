@@ -56,7 +56,7 @@ export default class Game {
   }
 
   render() {
-    LJS.drawRect(this.center, this.size, new LJS.Color().setHex("#001effff"));
+    //LJS.drawRect(this.center, this.size, new LJS.Color().setHex("#001effff"));
     this.player.render();
   }
 
