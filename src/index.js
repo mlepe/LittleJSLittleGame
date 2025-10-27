@@ -7,7 +7,9 @@
 "use strict";
 
 import * as LJS from "littlejsengine";
-import Tileset from "./assets/img/tileset.png";
+import Tileset from "./assets/img/16x16/monochrome-transparent_packed.png";
+//import MainTileset from "./assets/img/8x8/8x8_main.png";
+//import ExtraTileset from "./assets/img/8x8/8x8_interiors.png";
 import Game from "./js/game";
 
 const ENV_TILES = {
@@ -61,15 +63,7 @@ const ENV_TILES = {
   },
 };
 
-/*function handleInput() {
-  G.player.move(LJS.keyDirection());
-}*/
-
-const game = new Game(800, 600, 8, LJS.vec2(2), [Tileset], 13, 11);
-
-// ---
-
-const tileLayers = [];
+const game = new Game(800, 600, 16, LJS.vec2(1, 1), [Tileset], 48, 21);
 
 // ENGINE CODE BELOW
 
@@ -78,25 +72,6 @@ function gameInit() {
   // called once after the engine starts up
   // setup the game
   game.init();
-
-  // create tile layer
-  const pos = LJS.vec2();
-  const tileLayer = new LJS.TileCollisionLayer(pos, game.size);
-  for (pos.x = tileLayer.size.x; pos.x--; )
-    for (pos.y = tileLayer.size.y; pos.y--; ) {
-      // check if tile should be solid
-      if (LJS.randBool(0.7)) continue;
-
-      // set tile data
-      const tileIndex = 42;
-      const direction = LJS.randInt(4);
-      const mirror = LJS.randBool();
-      const color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
-      const data = new LJS.TileLayerData(tileIndex, direction, mirror, color);
-      tileLayer.setData(pos, data);
-      tileLayer.setCollisionData(pos);
-    }
-  tileLayer.redraw(); // redraw tile layer with new data
 }
 
 ///////////////////////////////////////////////////////////////////////////////

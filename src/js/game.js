@@ -12,6 +12,7 @@
 
 import * as LJS from "littlejsengine";
 import Tile from "./tile";
+import Level from "./level";
 
 export default class Game {
   constructor(
@@ -20,8 +21,9 @@ export default class Game {
     tileSize,
     scale,
     tiles,
-    tilesColumns = 0,
-    tilesRow = 0
+    tilesColumns,
+    tilesRow,
+    levelsCount = 6
   ) {
     this.width = width;
     this.height = height;
@@ -31,9 +33,13 @@ export default class Game {
     this.tilesColumns = tilesColumns;
     this.tilesRow = tilesRow;
     this.player = null;
+    this.currentLevel = null;
+    this.levelsCount = levelsCount;
+    this.levels = [];
   }
 
   init() {
+    this.timer = new LJS.Timer(0.06);
     this.gameSize = LJS.vec2(this.width, this.height);
     LJS.setCanvasFixedSize(this.gameSize);
     LJS.setCanvasMaxSize(this.gameSize);
@@ -46,13 +52,71 @@ export default class Game {
     // position camera in middle of screen
     LJS.setCameraPos(this.center);
     // scale 1:1 with our tilesize (16x16)
-    LJS.cameraScale = this.tileSize;
+    LJS.cameraScale = this.tileSize * 1;
 
-    this.player = new Tile(42, this.tileSize, this.scale, this.center);
+    // Ranges
+    // 24 - 31 : NPCS (+49 to go down a row)
+
+    this.player = new Tile(24, this.tileSize, this.scale, this.center);
+
+    /*// create tile layer
+    const pos = LJS.vec2();
+    this.tileLayers = [
+      new LJS.TileCollisionLayer(
+        pos,
+        this.size,
+        new LJS.TileInfo(LJS.vec2(0), LJS.vec2(this.tileSize), 0)
+      ),
+      new LJS.TileCollisionLayer(
+        pos,
+        this.size,
+        new LJS.TileInfo(LJS.vec2(0), LJS.vec2(this.tileSize), 0)
+      ),
+    ];
+    for (let i = 0; i < this.tileLayers.length; i++) {
+      // set tile data
+      let tileIndex = 52;
+      let direction = LJS.randInt(4);
+      let mirror = LJS.randBool();
+      let color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
+
+      if (i == 0) {
+        tileIndex = 5;
+      } else if (i == 1) {
+        tileIndex = 637;
+      }
+
+      for (pos.x = this.tileLayers[i].size.x; pos.x--; ) {
+        for (pos.y = this.tileLayers[i].size.y; pos.y--; ) {
+          if (i == 1) {
+            // check if tile should be solid
+            if (LJS.randBool(0.7)) continue;
+            color = LJS.RED;
+            //tileIndex = 10;
+            direction = LJS.randInt(4);
+            mirror = LJS.randBool();
+            //color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
+          }
+          // check if tile should be solid
+          if (LJS.randBool(0.1)) continue;
+          let data = new LJS.TileLayerData(tileIndex, direction, mirror, color);
+          this.tileLayers[i].setData(pos, data);
+          this.tileLayers[i].setCollisionData(pos);
+        }
+      }
+      this.tileLayers[i].redraw();
+    }*/
+    this.createLevels();
+    this.currentLevel.currentRoom.tileLayer.redraw();
+    this.player.position = this.currentLevel.currentRoom.center;
+    LJS.setCameraPos(this.player.position);
   }
 
   update() {
-    this.handleInput();
+    if (this.timer.elapsed()) {
+      this.handleInput();
+      this.timer.set(0.06);
+    }
   }
 
   render() {
@@ -61,6 +125,38 @@ export default class Game {
   }
 
   handleInput() {
-    this.player.move(LJS.keyDirection());
+    //console.log("Time delta: ", LJS.timeDelta);
+    let direction = LJS.keyDirection();
+    //console.log("direction: ", direction);
+    let collides = LJS.tileCollisionGetData(
+      this.player.position.add(direction)
+    );
+    /*if (collides) {
+      console.log(
+        "collision data: ",
+        this.tileLayers[1].getCollisionData(this.player.position.add(direction))
+      );
+      if (
+        !this.tileLayers[1].getCollisionData(
+          this.player.position.add(direction)
+        )
+      ) {
+        collides = false;
+      }
+    }*/
+    if (!collides) this.player.move(direction);
+  }
+
+  checkCollision(object1, object2) {
+    // Implement collision detection here
+  }
+
+  createLevels() {
+    for (let i = 0; i < this.levelsCount; i++) {
+      const level = new Level();
+      this.levels.push(level);
+    }
+
+    this.currentLevel = this.levels[0];
   }
 }

@@ -16,6 +16,10 @@ export default class Actor {
     this.position = tile.position;
   }
 
+  move(vec) {
+    this.position = this.position.add(vec);
+  }
+
   init() {
     // Initialize actor properties here
   }

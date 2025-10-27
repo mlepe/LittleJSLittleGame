@@ -11,7 +11,12 @@
  */
 import * as LJS from "littlejsengine";
 export default class Tile {
-  constructor(tileId, tileSize, scale = 2, position = LJS.vec2(0, 0)) {
+  constructor(
+    tileId,
+    tileSize,
+    scale = LJS.vec2(2),
+    position = LJS.vec2(0, 0)
+  ) {
     this.tileId = tileId;
     this.position = position;
     this.tileSize = tileSize;
