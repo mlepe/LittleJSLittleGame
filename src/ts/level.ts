@@ -1,0 +1,223 @@
+/*
+ * File: level.js
+ * Project: testproj
+ * File Created: Monday, 27th October 2025 2:36:02 pm
+ * Author: Matthieu LEPERLIER (m.leperlier42@gmail.com)
+ * -----
+ * Last Modified: Monday, 27th October 2025 2:36:02 pm
+ * Modified By: Matthieu LEPERLIER (m.leperlier42@gmail.com>)
+ * -----
+ * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
+ */
+import * as LJS from "littlejsengine";
+import Room from "./room";
+import Utils from "./utils";
+const gvec2 = Utils.gvec2;
+
+const DEFAULT_LEVEL_LAYOUT: number[][] = [
+  [0, 1, 0, 0, 0],
+  [0, 1, 2, 0, 0],
+  [0, 0, 1, 0, 0],
+  [0, 0, 1, 3, 0],
+];
+
+const DEFAULT_EMPTY_ROOMS_MAP: (Room | null)[][] = [
+  [null, null, null, null, null],
+  [null, null, null, null, null],
+  [null, null, null, null, null],
+  [null, null, null, null, null],
+];
+export default class Level {
+  id: number;
+  roomsCount: number;
+  rooms: any[];
+  roomsMap: Room[][];
+  levelLayout: number[][];
+  currentRoom: Room | null;
+  constructor(id: number, roomsCount = 6, levelLayout = DEFAULT_LEVEL_LAYOUT) {
+    this.id = id;
+    this.roomsCount = roomsCount;
+    this.rooms = [];
+    this.roomsMap = DEFAULT_EMPTY_ROOMS_MAP;
+    this.levelLayout = levelLayout;
+    this.currentRoom = null;
+
+    this.init();
+  }
+
+  init() {
+    this.createRooms();
+  }
+
+  createRooms() {
+    let i = 0;
+    for (let y = 0; y < this.levelLayout.length; y++) {
+      for (let x = 0; x < this.levelLayout[y].length; x++) {
+        const roomType = this.levelLayout[y][x];
+        if (roomType == 0) continue; // Skip empty rooms
+        const room = new Room(i, LJS.vec2(x, y), roomType);
+        i++;
+
+        this.roomsMap[y][x] = room;
+        this.rooms.push(room);
+        //if (roomType == 2) this.currentRoom = room; // Set start room
+      }
+    }
+
+    for (let y = 0; y < this.levelLayout.length; y++) {
+      for (let x = 0; x < this.levelLayout[y].length; x++) {
+        if (this.roomsMap[y][x]) {
+          let room = this.roomsMap[y][x];
+          /*console.log(
+            "Creating doors for room at position, gPosition (fn call): ",
+            this.roomsMap[y][x],
+            LJS.vec2(x, y),
+            gvec2(LJS.vec2(x, y))
+          );*/
+          if (y > 0 && this.roomsMap[y - 1][x])
+            room.up = this.roomsMap[y - 1][x];
+          room.createDoor(room.up, Utils.CardinalDirection.UP);
+          if (y < this.levelLayout.length - 1 && this.roomsMap[y + 1][x])
+            room.down = this.roomsMap[y + 1][x];
+          room.createDoor(room.down, Utils.CardinalDirection.DOWN);
+          if (x > 0 && this.roomsMap[y][x - 1])
+            room.left = this.roomsMap[y][x - 1];
+          room.createDoor(room.left, Utils.CardinalDirection.LEFT);
+          if (x < this.levelLayout[y].length - 1 && this.roomsMap[y][x + 1])
+            room.right = this.roomsMap[y][x + 1];
+          room.createDoor(room.right, Utils.CardinalDirection.RIGHT);
+
+          //this.createDoors(this.roomsMap[y][x]);
+        }
+      }
+    }
+
+    for (let y = 0; y < this.levelLayout.length; y++) {
+      for (let x = 0; x < this.levelLayout[y].length; x++) {
+        if (this.levelLayout[y][x] == 2) {
+          //this.currentRoom = this.roomsMap[y][x];
+          this.switchRoom(this.roomsMap[y][x]);
+        }
+      }
+    }
+  }
+
+  createRoomDoor(room: Room, cardinalDirection: Utils.CardinalDirection) {
+    console.log(
+      "Creating door for room at position: ",
+      room.position,
+      " direction: ",
+      cardinalDirection
+    );
+    let destRoom = null;
+    if (cardinalDirection == "up") {
+      destRoom = this.roomsMap[room.position.y - 1][room.position.x];
+    } else if (cardinalDirection == "down") {
+      destRoom = this.roomsMap[room.position.y + 1][room.position.x];
+    } else if (cardinalDirection == "left") {
+      destRoom = this.roomsMap[room.position.y][room.position.x - 1];
+    } else if (cardinalDirection == "right") {
+      destRoom = this.roomsMap[room.position.y][room.position.x + 1];
+    }
+
+    room.createDoor(destRoom, cardinalDirection);
+  }
+  createDoors(room: Room) {
+    console.log(
+      "In level.createDoors() for room at position: ",
+      room,
+      room.position
+    );
+    const up = room.position.add(LJS.vec2(0, 1));
+    const down = room.position.add(LJS.vec2(0, -1));
+    const left = room.position.add(LJS.vec2(-1, 0));
+    const right = room.position.add(LJS.vec2(1, 0));
+
+    console.log(
+      "Adjacent rooms at up, down, left, right: ",
+      this.roomsMap[up.y] ? this.roomsMap[up.y][up.x] : "Out of bounds",
+      this.roomsMap[down.y] ? this.roomsMap[down.y][down.x] : "Out of bounds",
+      this.roomsMap[left.y] ? this.roomsMap[left.y][left.x] : "Out of bounds",
+      this.roomsMap[right.y] ? this.roomsMap[right.y][right.x] : "Out of bounds"
+    );
+
+    let adjacentRooms = {
+      up: this.roomsMap[up.y] ? this.roomsMap[up.y][up.x] : null,
+      down: this.roomsMap[down.y] ? this.roomsMap[down.y][down.x] : null,
+      left: this.roomsMap[left.y] ? this.roomsMap[left.y][left.x] : null,
+      right: this.roomsMap[right.y] ? this.roomsMap[right.y][right.x] : null,
+    };
+
+    if (adjacentRooms.up) {
+      // Create door at the top
+      let position = LJS.vec2(Math.floor(room.size.x / 2), 0);
+      //let direction = LJS.vec2(0, -1);
+      room.createDoor(this.roomsMap[up.y][up.x], Utils.CardinalDirection.UP);
+    }
+    if (adjacentRooms.down) {
+      // Create door at the bottom
+      let position = LJS.vec2(Math.floor(room.size.x / 2), room.size.y - 1);
+      //let direction = LJS.vec2(0, 0);
+      room.createDoor(
+        this.roomsMap[down.y][down.x],
+        Utils.CardinalDirection.DOWN
+      );
+    }
+    if (adjacentRooms.left) {
+      // Create door on the left
+      let position = LJS.vec2(0, Math.floor(room.size.y / 2));
+      //let direction = LJS.vec2(-1, 0);
+      room.createDoor(
+        this.roomsMap[left.y][left.x],
+        Utils.CardinalDirection.LEFT
+      );
+    }
+    if (adjacentRooms.right) {
+      // Create door on the right
+      let position = LJS.vec2(room.size.x - 1, Math.floor(room.size.y / 2));
+      //let direction = LJS.vec2(1, 0);
+      room.createDoor(
+        this.roomsMap[right.y][right.x],
+        Utils.CardinalDirection.RIGHT
+      );
+    }
+  }
+
+  switchRoom(newRoom: Room) {
+    const up = newRoom.position.add(LJS.vec2(0, -1));
+    const down = newRoom.position.add(LJS.vec2(0, 1));
+    const left = newRoom.position.add(LJS.vec2(-1, 0));
+    const right = newRoom.position.add(LJS.vec2(1, 0));
+    const previousRoom: Room | null = this.currentRoom;
+
+    console.log("Switching room from, to: ", previousRoom, newRoom);
+    this.currentRoom = newRoom;
+    this.currentRoom.tileLayer.redraw();
+
+    if (!previousRoom) return;
+
+    let newPlayerPos = LJS.vec2(0);
+
+    if (previousRoom.doorsMap.up) {
+      newPlayerPos = LJS.vec2(newRoom.center.x, 0);
+    }
+    if (previousRoom.doorsMap.down) {
+      newPlayerPos = LJS.vec2(newRoom.center.x, newRoom.size.y - 1);
+    }
+    if (previousRoom.doorsMap.left) {
+      newPlayerPos = LJS.vec2(newRoom.size.x - 1, newRoom.center.y);
+    }
+    if (previousRoom.doorsMap.right) {
+      newPlayerPos = LJS.vec2(0, newRoom.center.y);
+    }
+
+    return newPlayerPos;
+    /*console.log(
+      "Room up, down, left, right: ",
+      this.roomsMap[up.y][up.x],
+      this.roomsMap[down.y][down.x],
+      this.roomsMap[left.y][left.x],
+      this.roomsMap[right.y][right.x]
+    );*/
+  }
+}

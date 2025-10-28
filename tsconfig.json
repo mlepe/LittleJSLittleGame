@@ -1,0 +1,19 @@
+/*
+ * File: tsconfig.json
+ * Project: testproj
+ * File Created: Tuesday, 28th October 2025 11:03:36 pm
+ * Author: Matthieu LEPERLIER (m.leperlier42@gmail.com)
+ * -----
+ * Last Modified: Tuesday, 28th October 2025 11:03:36 pm
+ * Modified By: Matthieu LEPERLIER (m.leperlier42@gmail.com>)
+ * -----
+ * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
+ */
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "es5"
+  },
+  "include": ["./src/**/*"]
+}

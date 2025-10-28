@@ -15,9 +15,14 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   mode: "production",
   entry: {
-    app: "./src/index.js",
+    app: "./src/index.ts",
   },
-  devtool: "inline-source-map",
+  // Enable sourcemaps for debugging webpack's output.
+  devtool: "source-map",
+  resolve: {
+    // Add '.ts' and '.tsx' as resolvable extensions.
+    extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
+  },
   devServer: {
     static: "./dist",
     hot: true,
@@ -36,12 +41,12 @@ module.exports = {
     rules: [
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: "asset/resource",
+        loader: "file-loader",
       },
-      {
-        test: /\.js$/,
-        include: [path.resolve(__dirname, "src/js")],
-      },
+      // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
+      { test: /\.tsx?$/, loader: "ts-loader" },
+      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+      { test: /\.js$/, loader: "source-map-loader" },
     ],
   },
   performance: {
