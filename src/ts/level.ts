@@ -54,7 +54,7 @@ export default class Level {
     for (let y = 0; y < this.levelLayout.length; y++) {
       for (let x = 0; x < this.levelLayout[y].length; x++) {
         const roomType = this.levelLayout[y][x];
-        if (roomType == 0) continue; // Skip empty rooms
+        if (roomType == Room.RoomTypes.EMPTY) continue; // Skip empty rooms
         const room = new Room(i, LJS.vec2(x, y), roomType);
         i++;
 
@@ -66,7 +66,7 @@ export default class Level {
 
     for (let y = 0; y < this.levelLayout.length; y++) {
       for (let x = 0; x < this.levelLayout[y].length; x++) {
-        if (this.roomsMap[y][x]) {
+        if (this.roomsMap[y][x] != null) {
           let room = this.roomsMap[y][x];
           /*console.log(
             "Creating doors for room at position, gPosition (fn call): ",
@@ -74,27 +74,35 @@ export default class Level {
             LJS.vec2(x, y),
             gvec2(LJS.vec2(x, y))
           );*/
-          if (y > 0 && this.roomsMap[y - 1][x])
+          if (y > 0 && this.roomsMap[y - 1][x] != null) {
             room.up = this.roomsMap[y - 1][x];
-          room.createDoor(room.up, Utils.CardinalDirection.UP);
-          if (y < this.levelLayout.length - 1 && this.roomsMap[y + 1][x])
+            room.createDoor(room.up, Utils.CardinalDirection.UP);
+          }
+          if (
+            y < this.levelLayout.length - 1 &&
+            this.roomsMap[y + 1][x] != null
+          ) {
             room.down = this.roomsMap[y + 1][x];
-          room.createDoor(room.down, Utils.CardinalDirection.DOWN);
-          if (x > 0 && this.roomsMap[y][x - 1])
+            room.createDoor(room.down, Utils.CardinalDirection.DOWN);
+          }
+          if (x > 0 && this.roomsMap[y][x - 1] != null) {
             room.left = this.roomsMap[y][x - 1];
-          room.createDoor(room.left, Utils.CardinalDirection.LEFT);
-          if (x < this.levelLayout[y].length - 1 && this.roomsMap[y][x + 1])
+            room.createDoor(room.left, Utils.CardinalDirection.LEFT);
+          }
+          if (
+            x < this.levelLayout[y].length - 1 &&
+            this.roomsMap[y][x + 1] != null
+          ) {
             room.right = this.roomsMap[y][x + 1];
-          room.createDoor(room.right, Utils.CardinalDirection.RIGHT);
-
-          //this.createDoors(this.roomsMap[y][x]);
+            room.createDoor(room.right, Utils.CardinalDirection.RIGHT);
+          }
         }
       }
     }
 
     for (let y = 0; y < this.levelLayout.length; y++) {
       for (let x = 0; x < this.levelLayout[y].length; x++) {
-        if (this.levelLayout[y][x] == 2) {
+        if (this.levelLayout[y][x] == Room.RoomTypes.START) {
           //this.currentRoom = this.roomsMap[y][x];
           this.switchRoom(this.roomsMap[y][x]);
         }
@@ -128,8 +136,8 @@ export default class Level {
       room,
       room.position
     );
-    const up = room.position.add(LJS.vec2(0, 1));
-    const down = room.position.add(LJS.vec2(0, -1));
+    const up = room.position.add(LJS.vec2(0, -1));
+    const down = room.position.add(LJS.vec2(0, 1));
     const left = room.position.add(LJS.vec2(-1, 0));
     const right = room.position.add(LJS.vec2(1, 0));
 
@@ -183,6 +191,41 @@ export default class Level {
     }
   }
 
+  renderMinimap() {
+    let minimap = this.roomsMap;
+    let minimapSize = LJS.vec2(100, 100);
+    let minimapPos = LJS.vec2(500, 50);
+    let color: LJS.Color;
+
+    LJS.drawRect(minimapPos, minimapSize, LJS.GRAY, 0, true, true);
+    for (let y = 0; y < minimap.length; y++) {
+      for (let x = 0; x < minimap[y].length; x++) {
+        if (minimap[y][x] != null) {
+          if (minimap[y][x].roomType == Room.RoomTypes.START) {
+            color = LJS.YELLOW;
+          } else if (minimap[y][x].roomType == Room.RoomTypes.END) {
+            color = LJS.RED;
+          } else {
+            color = LJS.WHITE;
+          }
+
+          if (minimap[y][x] == this.currentRoom) {
+            color = LJS.GREEN;
+          }
+
+          LJS.drawRect(
+            minimapPos.add(LJS.vec2(x * 10, y * 10)),
+            LJS.vec2(10, 10),
+            color,
+            0,
+            true,
+            true
+          );
+        }
+      }
+    }
+  }
+
   switchRoom(newRoom: Room) {
     const up = newRoom.position.add(LJS.vec2(0, -1));
     const down = newRoom.position.add(LJS.vec2(0, 1));
@@ -202,7 +245,7 @@ export default class Level {
       newPlayerPos = LJS.vec2(newRoom.center.x, 0);
     }
     if (previousRoom.doorsMap.down) {
-      newPlayerPos = LJS.vec2(newRoom.center.x, newRoom.size.y - 1);
+      newPlayerPos = LJS.vec2(newRoom.center.x, newRoom.size.y + 2);
     }
     if (previousRoom.doorsMap.left) {
       newPlayerPos = LJS.vec2(newRoom.size.x - 1, newRoom.center.y);

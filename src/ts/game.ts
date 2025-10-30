@@ -14,6 +14,7 @@ import * as LJS from "littlejsengine";
 import Tile from "./tile";
 import Level from "./level";
 import Utils from "./utils";
+import Room from "./room";
 
 const gvec2 = Utils.gvec2;
 
@@ -163,6 +164,7 @@ export default class Game {
   renderPost() {
     // Draw HUD or effects above all objects
     if (this.debugMode) this.drawDebugHUD();
+    this.currentLevel.renderMinimap();
   }
 
   drawDebugHUD() {
@@ -181,7 +183,7 @@ export default class Game {
     //LJS.drawTextOverlay(this.debugHud, LJS.vec2(0), 1, coloropt);
 
     LJS.drawTextScreen(
-      this.debugHud,
+      text,
       LJS.vec2(100, 100),
       sizeopt,
       coloropt,
@@ -227,37 +229,22 @@ export default class Game {
       // If collides with a door, switch room
       if (collides == 2) {
         console.log("Door found, switching room");
-        /*this.currentLevel.switchRoom(
-          this.currentLevel.currentRoom.getDoorAtPosition(
-            this.player.position.add(direction)
-          ).room*/
-        /*console.log(
-          "Calculating new room position (currentRoomPosition, direction, newRoomPosition, newRoom):",
-          this.currentLevel.currentRoom.position,
-          direction,
-          this.gvec2(
-            this.currentLevel.currentRoom.position.x + gDirection.x,
-            this.currentLevel.currentRoom.position.y + gDirection.y
-          ),
-          this.currentLevel.roomsMap[
-            this.currentLevel.currentRoom.position.y + gDirection.y
-          ][this.currentLevel.currentRoom.position.x + gDirection.x]
-        );*/
         let doorCardinalDirectionString = "";
-        if (direction.y == 1) doorCardinalDirectionString = "up";
-        else if (direction.y == -1) doorCardinalDirectionString = "down";
-        else if (direction.x == -1) doorCardinalDirectionString = "left";
-        else if (direction.x == 1) doorCardinalDirectionString = "right";
+        let newRoom: Room;
+        if (direction.y == 1) newRoom = this.currentLevel.currentRoom.up;
+        else if (direction.y == -1)
+          newRoom = this.currentLevel.currentRoom.down;
+        else if (direction.x == -1)
+          newRoom = this.currentLevel.currentRoom.left;
+        else if (direction.x == 1)
+          newRoom = this.currentLevel.currentRoom.right;
 
         console.log(
           "Door cardinal direction string: ",
           doorCardinalDirectionString
         );
 
-        let newRoom =
-          this.currentLevel.currentRoom.doorsMap[doorCardinalDirectionString]
-            .destRoom;
-        this.currentLevel.switchRoom(newRoom);
+        this.player.position = this.currentLevel.switchRoom(newRoom);
         //this.player.position = newPlayerPos;
         return;
 
