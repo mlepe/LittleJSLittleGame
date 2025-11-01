@@ -10,33 +10,33 @@
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
 
-import * as LJS from "littlejsengine";
-import Tile from "./tile";
-import Level from "./level";
-import Utils from "./utils";
-import Room from "./room";
+import * as LJS from 'littlejsengine'
+import Tile from './tile'
+import Level from './level'
+import Utils from './utils'
+import Room from './room'
 
-const gvec2 = Utils.gvec2;
+const gvec2 = Utils.gvec2
 
 export default class Game {
-  width: number;
-  height: number;
-  tileSize: number;
-  scale: LJS.Vector2;
-  tiles: any;
-  tilesColumns: number;
-  tilesRow: number;
-  levelsCount: number;
-  player: Tile;
-  currentLevel: Level;
-  levels: (Level | null)[];
-  hud: string;
-  debugHud: string;
-  debugMode: boolean;
-  timer: LJS.Timer;
-  gameSize: LJS.Vector2;
-  size: LJS.Vector2;
-  center: LJS.Vector2;
+  width: number
+  height: number
+  tileSize: number
+  scale: LJS.Vector2
+  tiles: any
+  tilesColumns: number
+  tilesRow: number
+  levelsCount: number
+  player: Tile
+  currentLevel: Level
+  levels: (Level | null)[]
+  hud: string
+  debugHud: string
+  debugMode: boolean
+  timer: LJS.Timer
+  gameSize: LJS.Vector2
+  size: LJS.Vector2
+  center: LJS.Vector2
 
   constructor(
     width: number,
@@ -48,44 +48,44 @@ export default class Game {
     tilesRow: number,
     levelsCount = 6
   ) {
-    this.width = width;
-    this.height = height;
-    this.tileSize = tileSize;
-    this.scale = scale;
-    this.tiles = tiles;
-    this.tilesColumns = tilesColumns;
-    this.tilesRow = tilesRow;
-    this.player = null;
-    this.currentLevel = null;
-    this.levelsCount = levelsCount;
-    this.levels = [];
+    this.width = width
+    this.height = height
+    this.tileSize = tileSize
+    this.scale = scale
+    this.tiles = tiles
+    this.tilesColumns = tilesColumns
+    this.tilesRow = tilesRow
+    this.player = null
+    this.currentLevel = null
+    this.levelsCount = levelsCount
+    this.levels = []
 
-    this.hud = "";
-    this.debugHud = "";
+    this.hud = ''
+    this.debugHud = ''
 
-    this.debugMode = true;
+    this.debugMode = true
   }
 
   init() {
-    this.timer = new LJS.Timer(0.06);
-    this.gameSize = LJS.vec2(this.width, this.height);
-    LJS.setCanvasFixedSize(this.gameSize);
-    LJS.setCanvasMaxSize(this.gameSize);
+    this.timer = new LJS.Timer(0.06)
+    this.gameSize = LJS.vec2(this.width, this.height)
+    LJS.setCanvasFixedSize(this.gameSize)
+    LJS.setCanvasMaxSize(this.gameSize)
     this.size = LJS.vec2(
       this.width / this.tileSize,
       this.height / this.tileSize
-    );
+    )
     // center of the screen
-    this.center = LJS.vec2(this.size.x / 2, this.size.y / 2);
+    this.center = LJS.vec2(this.size.x / 2, this.size.y / 2)
     // position camera in middle of screen
-    LJS.setCameraPos(this.center);
+    LJS.setCameraPos(this.center)
     // scale 1:1 with our tilesize (16x16)
-    LJS.setCameraScale(this.tileSize * 2);
+    LJS.setCameraScale(this.tileSize * 2)
 
     // Ranges
     // 24 - 31 : NPCS (+49 to go down a row)
 
-    this.player = new Tile(24, this.tileSize, this.scale, this.center);
+    this.player = new Tile(24, this.tileSize, this.scale, this.center)
 
     /*// create tile layer
     const pos = LJS.vec2();
@@ -134,51 +134,51 @@ export default class Game {
       }
       this.tileLayers[i].redraw();
     }*/
-    this.createLevels();
-    this.currentLevel.currentRoom.tileLayer.redraw();
+    this.createLevels()
+    this.currentLevel.currentRoom.tileLayer.redraw()
     this.player.position = LJS.vec2(
       Math.floor(this.currentLevel.currentRoom.center.x),
       Math.floor(this.currentLevel.currentRoom.center.y)
-    );
-    LJS.setCameraPos(this.player.position);
+    )
+    LJS.setCameraPos(this.player.position)
 
     this.debugHud = `Player position: ${this.player.position.x}, ${this.player.position.y}\n
     Player gPosition: ${this.player.gPosition.x}, ${this.player.gPosition.y}\n
     Current level id: ${this.currentLevel.id}\n
-    Current room id, position: ${this.currentLevel.currentRoom.id}, ${this.currentLevel.currentRoom.position.x}, ${this.currentLevel.currentRoom.position.y}`;
+    Current room id, position: ${this.currentLevel.currentRoom.id}, ${this.currentLevel.currentRoom.position.x}, ${this.currentLevel.currentRoom.position.y}`
   }
 
   update() {
     if (this.timer.elapsed()) {
-      this.handleInput();
-      this.updateDebugHUD();
-      this.timer.set(0.06);
+      this.handleInput()
+      this.updateDebugHUD()
+      this.timer.set(0.06)
     }
   }
 
   render() {
     //LJS.drawRect(this.center, this.size, new LJS.Color().setHex("#001effff"));
-    this.player.render();
+    this.player.render()
   }
 
   renderPost() {
     // Draw HUD or effects above all objects
-    if (this.debugMode) this.drawDebugHUD();
-    this.currentLevel.renderMinimap();
+    if (this.debugMode) this.drawDebugHUD()
+    this.currentLevel.renderMinimap()
   }
 
   drawDebugHUD() {
-    const text = this.debugHud;
-    const lineColoropt = LJS.WHITE;
-    const textAlignopt = "left";
-    const sizeopt = 15;
-    const coloropt = LJS.WHITE;
-    const lineWidthopt = null;
-    const fontopt = "Arial";
-    const fontStyleopt = "normal";
-    const maxWidthopt = 1000;
-    const angleopt = 0;
-    const contextopt = null;
+    const text = this.debugHud
+    const lineColoropt = LJS.WHITE
+    const textAlignopt = 'left'
+    const sizeopt = 15
+    const coloropt = LJS.WHITE
+    const lineWidthopt = null
+    const fontopt = 'Arial'
+    const fontStyleopt = 'normal'
+    const maxWidthopt = 1000
+    const angleopt = 0
+    const contextopt = null
 
     //LJS.drawTextOverlay(this.debugHud, LJS.vec2(0), 1, coloropt);
 
@@ -194,59 +194,50 @@ export default class Game {
       fontStyleopt,
       maxWidthopt,
       angleopt
-    );
+    )
   }
 
   updateDebugHUD() {
     this.debugHud = `Player position: ${this.player.position.x}, ${this.player.position.y}\n
     Player game position: ${this.player.position.x}, ${this.player.position.y}\n
     Current level: ${this.currentLevel.id}\n
-    Current room position: ${this.currentLevel.currentRoom.position.x}, ${this.currentLevel.currentRoom.position.y}`;
+    Current room position: ${this.currentLevel.currentRoom.position.x}, ${this.currentLevel.currentRoom.position.y}`
   }
 
   handleInput() {
-    const up = LJS.vec2(0, 1);
-    const down = LJS.vec2(0, -1);
-    const left = LJS.vec2(-1, 0);
-    const right = LJS.vec2(1, 0);
+    const up = LJS.vec2(0, 1)
+    const down = LJS.vec2(0, -1)
+    const left = LJS.vec2(-1, 0)
+    const right = LJS.vec2(1, 0)
     //console.log("Time delta: ", LJS.timeDelta);
-    let direction = LJS.keyDirection();
-    let gDirection = LJS.vec2(direction.x, -direction.y);
+    let direction = LJS.keyDirection()
+    let gDirection = LJS.vec2(direction.x, -direction.y)
     //console.log("Direction: ", direction);
 
     //console.log("direction: ", direction);
-    let collides = LJS.tileCollisionGetData(
-      this.player.position.add(direction)
-    );
+    let collides = LJS.tileCollisionGetData(this.player.position.add(direction))
     if (collides) {
       console.log(
-        "Collision data at position, player position, direction: ",
+        'Collision data at position, player position, direction: ',
         collides,
         this.player.position.add(direction),
         this.player.position,
         direction
-      );
+      )
       // If collides with a door, switch room
       if (collides == 2) {
-        console.log("Door found, switching room");
-        let doorCardinalDirectionString = "";
-        let newRoom: Room;
-        if (direction.y == 1) newRoom = this.currentLevel.currentRoom.up;
-        else if (direction.y == -1)
-          newRoom = this.currentLevel.currentRoom.down;
-        else if (direction.x == -1)
-          newRoom = this.currentLevel.currentRoom.left;
-        else if (direction.x == 1)
-          newRoom = this.currentLevel.currentRoom.right;
+        console.log('Door found, switching room')
+        let newRoom: Room
+        if (direction.y == 1) newRoom = this.currentLevel.currentRoom.up
+        else if (direction.y == -1) newRoom = this.currentLevel.currentRoom.down
+        else if (direction.x == -1) newRoom = this.currentLevel.currentRoom.left
+        else if (direction.x == 1) newRoom = this.currentLevel.currentRoom.right
 
-        console.log(
-          "Door cardinal direction string: ",
-          doorCardinalDirectionString
-        );
-
-        this.player.position = this.currentLevel.switchRoom(newRoom);
-        //this.player.position = newPlayerPos;
-        return;
+        if (newRoom) {
+          this.player.position = this.currentLevel.switchRoom(newRoom)
+          LJS.setCameraPos(this.player.position)
+        }
+        return
 
         /*switch (direction) {
           case up:
@@ -276,7 +267,7 @@ export default class Game {
       }
     }
 
-    if (!collides) this.player.move(direction);
+    if (!collides) this.player.move(direction)
   }
 
   checkCollision(object1: any, object2: any) {
@@ -285,10 +276,10 @@ export default class Game {
 
   createLevels() {
     for (let i = 0; i < this.levelsCount; i++) {
-      const level = new Level(i);
-      this.levels.push(level);
+      const level = new Level(i)
+      this.levels.push(level)
     }
 
-    this.currentLevel = this.levels[0];
+    this.currentLevel = this.levels[0]
   }
 }
