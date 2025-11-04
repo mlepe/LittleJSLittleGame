@@ -9,8 +9,8 @@
  * -----
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
-import * as LJS from "littlejsengine";
-import Utils from "./utils";
+import * as LJS from 'littlejsengine';
+import Utils from './utils';
 
 const gvec2 = Utils.gvec2;
 export default class Tile {
@@ -22,7 +22,7 @@ export default class Tile {
   constructor(
     tileId: number,
     tileSize: number,
-    scale = LJS.vec2(2),
+    scale = LJS.vec2(1),
     position = LJS.vec2(0, 0)
   ) {
     this.tileId = tileId;

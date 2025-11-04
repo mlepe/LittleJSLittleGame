@@ -9,26 +9,50 @@
  * -----
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
-import * as LJS from "littlejsengine";
-import Room from "./room";
-import Utils from "./utils";
+import * as LJS from 'littlejsengine';
+import Room from './room';
+import Utils from './utils';
+import Entity from './entity';
+import Game from './game';
 
-export default class Door {
-  position: LJS.Vector2;
-  direction: LJS.Vector2;
+export default class Door extends Entity {
   toRoom: Room;
   fromRoom: Room;
   cardinalDirection: Utils.CardinalDirection;
 
   constructor(
-    position: LJS.Vector2,
+    id: number,
     fromRoom: Room,
     toRoom: Room,
-    cardinalDirection: Utils.CardinalDirection
+    position: LJS.Vector2,
+    cardinalDirection: Utils.CardinalDirection,
+    tileId: number,
+    tileSize: number
   ) {
-    this.position = position;
+    super(
+      id,
+      position,
+      LJS.vec2(1, 1), // Use proper size instead of Game.GameSize
+      Game.GameScale,
+      tileId,
+      Game.TileSize,
+      0,
+      LJS.RED,
+      false,
+      true,
+      false,
+      true,
+      Entity.EntityTypes.DOOR
+    );
     this.fromRoom = fromRoom;
     this.toRoom = toRoom;
     this.cardinalDirection = cardinalDirection;
+    this.tileId = tileId;
+    this.tileSize = tileSize;
+
+    // Make door solid for collision detection
+    this.isSolid = true;
+
+    //this.tile.setCollisionData(LJS.CollisionGroups.PLAYER, true);
   }
 }

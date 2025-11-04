@@ -9,11 +9,19 @@
  * -----
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
-import * as LJS from "littlejsengine";
+import * as LJS from 'littlejsengine';
+import Game from './game';
 
 namespace Utils {
   export function gvec2(vec: LJS.Vector2): LJS.Vector2 {
     return LJS.vec2(vec.x, -vec.y);
+  }
+
+  export function convertToGvec2(
+    size: LJS.Vector2,
+    vec: LJS.Vector2
+  ): LJS.Vector2 {
+    return LJS.vec2(vec.x, vec.y - size.y + 1);
   }
 
   export const enum DirectionCoordinates {
@@ -36,10 +44,10 @@ namespace Utils {
   }
 
   export const enum CardinalDirection {
-    UP = "up",
-    DOWN = "down",
-    LEFT = "left",
-    RIGHT = "right",
+    UP = 'up',
+    DOWN = 'down',
+    LEFT = 'left',
+    RIGHT = 'right',
   }
 }
 export default Utils;

@@ -10,14 +10,18 @@
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
 
-import * as LJS from "littlejsengine";
-import Tile from "./tile";
-import Level from "./level";
-import Utils from "./utils";
-import Room from "./room";
+import * as LJS from 'littlejsengine';
+import Tile from './tile';
+import Level from './level';
+import Utils from './utils';
+import Room from './room';
+import Entity, { EntityCollisionObject, EntityTypes } from './entity';
 
 const gvec2 = Utils.gvec2;
 
+const GAME_SIZE = LJS.vec2(800, 600);
+const GAME_SCALE = LJS.vec2(1);
+const TILE_SIZE = 16;
 export default class Game {
   width: number;
   height: number;
@@ -27,7 +31,7 @@ export default class Game {
   tilesColumns: number;
   tilesRow: number;
   levelsCount: number;
-  player: Tile;
+  player: Entity;
   currentLevel: Level;
   levels: (Level | null)[];
   hud: string;
@@ -37,6 +41,8 @@ export default class Game {
   gameSize: LJS.Vector2;
   size: LJS.Vector2;
   center: LJS.Vector2;
+  playerDirection: LJS.Vector2;
+  entities: Entity[];
 
   constructor(
     width: number,
@@ -55,15 +61,24 @@ export default class Game {
     this.tiles = tiles;
     this.tilesColumns = tilesColumns;
     this.tilesRow = tilesRow;
-    this.player = null;
     this.currentLevel = null;
     this.levelsCount = levelsCount;
     this.levels = [];
+    this.playerDirection = LJS.vec2(0, 0);
 
-    this.hud = "";
-    this.debugHud = "";
+    this.hud = '';
+    this.debugHud = '';
 
     this.debugMode = true;
+  }
+
+  static GameSize = GAME_SIZE;
+  static GameScale = GAME_SCALE;
+  static TileSize = TILE_SIZE;
+  static Entities: Entity[] = [];
+
+  static getEntities(): Entity[] {
+    return this.Entities;
   }
 
   init() {
@@ -76,7 +91,10 @@ export default class Game {
       this.height / this.tileSize
     );
     // center of the screen
-    this.center = LJS.vec2(this.size.x / 2, this.size.y / 2);
+    this.center = LJS.vec2(
+      Math.floor(this.size.x / 2),
+      Math.floor(this.size.y / 2)
+    );
     // position camera in middle of screen
     LJS.setCameraPos(this.center);
     // scale 1:1 with our tilesize (16x16)
@@ -85,60 +103,30 @@ export default class Game {
     // Ranges
     // 24 - 31 : NPCS (+49 to go down a row)
 
-    this.player = new Tile(24, this.tileSize, this.scale, this.center);
+    let playerTileId: number = 24;
 
-    /*// create tile layer
-    const pos = LJS.vec2();
-    this.tileLayers = [
-      new LJS.TileCollisionLayer(
-        pos,
-        this.size,
-        new LJS.TileInfo(LJS.vec2(0), LJS.vec2(this.tileSize), 0)
-      ),
-      new LJS.TileCollisionLayer(
-        pos,
-        this.size,
-        new LJS.TileInfo(LJS.vec2(0), LJS.vec2(this.tileSize), 0)
-      ),
-    ];
-    for (let i = 0; i < this.tileLayers.length; i++) {
-      // set tile data
-      let tileIndex = 52;
-      let direction = LJS.randInt(4);
-      let mirror = LJS.randBool();
-      let color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
+    this.player = new Entity(
+      0,
+      LJS.vec2(0, 0),
+      LJS.vec2(1, 1),
+      this.scale,
+      playerTileId,
+      this.tileSize,
+      0,
+      LJS.WHITE,
+      true,
+      true,
+      true,
+      true,
+      EntityTypes.PLAYER
+    );
 
-      if (i == 0) {
-        tileIndex = 5;
-      } else if (i == 1) {
-        tileIndex = 637;
-      }
+    Game.Entities[0] = this.player;
 
-      for (pos.x = this.tileLayers[i].size.x; pos.x--; ) {
-        for (pos.y = this.tileLayers[i].size.y; pos.y--; ) {
-          if (i == 1) {
-            // check if tile should be solid
-            if (LJS.randBool(0.7)) continue;
-            color = LJS.RED;
-            //tileIndex = 10;
-            direction = LJS.randInt(4);
-            mirror = LJS.randBool();
-            //color = LJS.randColor(LJS.WHITE, LJS.hsl(0, 0, 0.2));
-          }
-          // check if tile should be solid
-          if (LJS.randBool(0.1)) continue;
-          let data = new LJS.TileLayerData(tileIndex, direction, mirror, color);
-          this.tileLayers[i].setData(pos, data);
-          this.tileLayers[i].setCollisionData(pos);
-        }
-      }
-      this.tileLayers[i].redraw();
-    }*/
     this.createLevels();
-    this.currentLevel.currentRoom.tileLayer.redraw();
-    this.player.position = LJS.vec2(
-      Math.floor(this.currentLevel.currentRoom.center.x),
-      Math.floor(this.currentLevel.currentRoom.center.y)
+    //this.currentLevel.currentRoom.tileLayer.redraw();
+    this.player.setPosition(
+      this.currentLevel.switchRoom(this.currentLevel.startRoom)
     );
     LJS.setCameraPos(this.player.position);
 
@@ -159,6 +147,10 @@ export default class Game {
   render() {
     //LJS.drawRect(this.center, this.size, new LJS.Color().setHex("#001effff"));
     this.player.render();
+    // Render doors in current room
+    if (this.currentLevel && this.currentLevel.currentRoom) {
+      this.currentLevel.currentRoom.render();
+    }
   }
 
   renderPost() {
@@ -170,12 +162,12 @@ export default class Game {
   drawDebugHUD() {
     const text = this.debugHud;
     const lineColoropt = LJS.WHITE;
-    const textAlignopt = "left";
+    const textAlignopt = 'left';
     const sizeopt = 15;
     const coloropt = LJS.WHITE;
     const lineWidthopt = null;
-    const fontopt = "Arial";
-    const fontStyleopt = "normal";
+    const fontopt = 'Arial';
+    const fontStyleopt = 'normal';
     const maxWidthopt = 1000;
     const angleopt = 0;
     const contextopt = null;
@@ -198,10 +190,16 @@ export default class Game {
   }
 
   updateDebugHUD() {
-    this.debugHud = `Player position: ${this.player.position.x}, ${this.player.position.y}\n
-    Player game position: ${this.player.position.x}, ${this.player.position.y}\n
+    const currentRoom = this.currentLevel.currentRoom;
+    const doorCount = currentRoom ? currentRoom.doors.length : 0;
+    const entitiesCount = Game.Entities.length;
+
+    this.debugHud = `Player position: ${this.player.position.x.toFixed(1)}, ${this.player.position.y.toFixed(1)}\n
+    Player direction: ${this.playerDirection.x}, ${this.playerDirection.y}\n
     Current level: ${this.currentLevel.id}\n
-    Current room position: ${this.currentLevel.currentRoom.position.x}, ${this.currentLevel.currentRoom.position.y}`;
+    Current room position: ${currentRoom?.position.x}, ${currentRoom?.position.y}\n
+    Doors in room: ${doorCount}\n
+    Total entities: ${entitiesCount}`;
   }
 
   handleInput() {
@@ -211,76 +209,49 @@ export default class Game {
     const right = LJS.vec2(1, 0);
     //console.log("Time delta: ", LJS.timeDelta);
     let direction = LJS.keyDirection();
+    this.playerDirection = direction;
     let gDirection = LJS.vec2(direction.x, -direction.y);
     //console.log("Direction: ", direction);
 
     //console.log("direction: ", direction);
-    let collides = LJS.tileCollisionGetData(
-      this.player.position.add(direction)
-    );
-    if (collides) {
-      console.log(
-        "Collision data at position, player position, direction: ",
-        collides,
-        this.player.position.add(direction),
-        this.player.position,
-        direction
+    let collidesWithEntity: EntityCollisionObject | null =
+      this.player.checkCollisionWithEntityAtPosition(
+        this.player.position.add(direction)
       );
-      // If collides with a door, switch room
-      if (collides == 2) {
-        console.log("Door found, switching room");
-        let doorCardinalDirectionString = "";
-        let newRoom: Room;
-        if (direction.y == 1) newRoom = this.currentLevel.currentRoom.up;
-        else if (direction.y == -1)
-          newRoom = this.currentLevel.currentRoom.down;
-        else if (direction.x == -1)
-          newRoom = this.currentLevel.currentRoom.left;
-        else if (direction.x == 1)
-          newRoom = this.currentLevel.currentRoom.right;
 
-        console.log(
-          "Door cardinal direction string: ",
-          doorCardinalDirectionString
+    switch (collidesWithEntity?.other?.entityType) {
+      case null:
+        // no collision
+        break;
+      case Entity.EntityTypes.ENEMY:
+        // handle collision with enemy
+        break;
+      case Entity.EntityTypes.DOOR:
+        // handle collision with door
+        this.player.setPosition(
+          this.currentLevel.switchRoom(
+            this.currentLevel.roomsMap[
+              this.currentLevel.currentRoom.position.y + gDirection.y
+            ][this.currentLevel.currentRoom.position.x + gDirection.x]
+          )
         );
-
-        this.player.position = this.currentLevel.switchRoom(newRoom);
-        //this.player.position = newPlayerPos;
-        return;
-
-        /*switch (direction) {
-          case up:
-            this.player.position = this.currentLevel.currentRoom.center.add(
-              LJS.vec2(0, this.currentLevel.currentRoom.size.y - 1)
-            );
-            break;
-          case down:
-            this.player.position = this.currentLevel.currentRoom.center.add(
-              LJS.vec2(0, -this.currentLevel.currentRoom.size.y - 1)
-            );
-            break;
-          case left:
-            this.player.position = this.currentLevel.currentRoom.center.add(
-              LJS.vec2(this.currentLevel.currentRoom.size.x - 1, 0)
-            );
-            break;
-          case right:
-            this.player.position = this.currentLevel.currentRoom.center.add(
-              LJS.vec2(-this.currentLevel.currentRoom.size.x - 1, 0)
-            );
-            break;
-        }
-
-        LJS.setCameraPos(this.player.position);
-        return;*/
-      }
+        break;
+      default:
+        // handle collision with entity
+        console.log(
+          'Collided with entity of type: ',
+          collidesWithEntity?.other?.entityType
+        );
+        break;
     }
 
-    if (!collides) this.player.move(direction);
-  }
+    let collidesWithTile = LJS.tileCollisionGetData(
+      this.player.position.add(direction)
+    );
 
-  checkCollision(object1: any, object2: any) {
-    // Implement collision detection here
+    let collides = collidesWithTile || collidesWithEntity;
+    //LJS.setCameraPos(this.player.position);
+    if (!collides) this.player.move(direction);
   }
 
   createLevels() {
