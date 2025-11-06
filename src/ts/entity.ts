@@ -1,17 +1,16 @@
 /*
  * File: entity.ts
  * Project: testproj
- * File Created: Thursday, 30th October 2025 8:19:02 pm
+ * File Created: Thursday, 6th November 2025 3:44:35 pm
  * Author: Matthieu LEPERLIER (m.leperlier42@gmail.com)
  * -----
- * Last Modified: Thursday, 30th October 2025 8:19:02 pm
+ * Last Modified: Thursday, 6th November 2025 3:44:36 pm
  * Modified By: Matthieu LEPERLIER (m.leperlier42@gmail.com>)
  * -----
  * Copyright 2021  - 2025 Matthieu LEPERLIER, Nomad Solutions
  */
 import * as LJS from 'littlejsengine';
 import Utils from './utils';
-import Tile from './tile';
 import Game from './game';
 
 const gvec2 = Utils.gvec2;
@@ -43,7 +42,6 @@ export default class Entity extends LJS.EngineObject {
   entityType: EntityTypes;
   tileId: number | null;
   tileSize: number | null;
-  tile: Tile | null;
 
   constructor(
     id: number,
@@ -72,9 +70,9 @@ export default class Entity extends LJS.EngineObject {
     this.canMove = false;
     this.isAlive = true;
     this.entityType = EntityTypes.NPC;
-    this.tileId = tileId;
+    this.tileId = 44;
     this.tileSize = tileSize;
-    this.tile = new Tile(this.tileId, this.tileSize, this.scale, this.position);
+    //this.tile = new Tile(this.tileId, this.tileSize, this.scale, this.position);
     this.clampSpeed = true;
     this.additiveColor = LJS.rgb(0, 0, 0, 0);
     this.collideRaycast = true;
@@ -90,8 +88,8 @@ export default class Entity extends LJS.EngineObject {
   setPosition(position: LJS.Vector2) {
     this.position = position;
     this.gPosition = convertToGvec2(Game.GameSize, position);
-    this.tile.position = position;
-    this.tile.gPosition = this.gPosition;
+    //this.tile.position = position;
+    //this.tile.gPosition = this.gPosition;
   }
 
   static get EntityTypes() {
@@ -103,10 +101,16 @@ export default class Entity extends LJS.EngineObject {
   }
 
   render() {
-    if (this.tile && this.isVisible) this.tile.render(this.scale);
+    //if (this.tile && this.isVisible) this.tile.render(this.scale);
+    LJS.drawTile(
+      this.position,
+      this.size,
+      LJS.tile(this.position, this.tileSize, 44),
+      this.color
+    );
   }
 
-  checkCollisionWithEntityAtPosition(
+  /*checkCollisionWithEntityAtPosition(
     position: LJS.Vector2
   ): EntityCollisionObject | null {
     let returnValue: EntityCollisionObject | null = null;
@@ -125,5 +129,5 @@ export default class Entity extends LJS.EngineObject {
       }
     }
     return returnValue;
-  }
+  }*/
 }

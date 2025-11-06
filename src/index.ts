@@ -61,7 +61,15 @@ const ENV_TILES = {
   },
 };
 
-const game: Game = new Game(800, 600, 16, LJS.vec2(1, 1), [Tileset], 48, 21);
+const game: Game = new Game(
+  800,
+  600,
+  LJS.vec2(16, 16),
+  LJS.vec2(1, 1),
+  [Tileset],
+  48,
+  21
+);
 
 // ENGINE CODE BELOW
 
