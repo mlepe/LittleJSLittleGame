@@ -13,6 +13,7 @@ import * as LJS from 'littlejsengine';
 import { GameObject } from './gameObjects';
 import Global from './global';
 import { vec2 } from 'littlejsengine';
+import Game from './game';
 
 export class GameCharacter extends GameObject {
   health: number;
@@ -40,8 +41,12 @@ export class GameCharacter extends GameObject {
     //this.setCollision(true, false);
   }
 
+  getLastPositionWithOffset(): LJS.Vector2 {
+    return this.lastPosition.copy().add(Global.EngineObjectPosOffset);
+  }
+
   update() {
-    /* if (this.isDead()) {
+    /* if (this.isDead())
       // Handle death logic
       return super.update();
     }
@@ -79,6 +84,7 @@ export class Player extends GameCharacter {
     //this.color = LJS.GREEN;
     //this.position = position;
     this.lastPosition = this.pos.copy();
+    this.velocity = LJS.vec2(0, 0);
   }
 
   update() {
@@ -87,10 +93,29 @@ export class Player extends GameCharacter {
     }
     // apply movement controls
     const moveInput = LJS.keyDirection().clampLength(1);
-    this.velocity = this.velocity.add(moveInput);
+    // Choose one method: either moving by velocity or directly updating position
+    //this.velocity = this.velocity.add(moveInput);
 
+    const newPos = this.pos.add(moveInput);
     // move camera with player
-    LJS.setCameraPos(this.pos);
+
+    const raycastResult = LJS.engineObjectsRaycast(this.pos, newPos);
+    const currentLevel = Game.CurrentLevel;
+    const tileResult =
+      currentLevel.currentRoom.wallLayer.getCollisionData(newPos);
+
+    if (raycastResult.length === 0 && tileResult === 0) {
+      this.lastPosition = this.pos.copy();
+      this.pos = newPos;
+      LJS.setCameraPos(this.pos);
+    } else {
+      // Collision detected, handle accordingly
+      console.log('Collision detected for player at position:', newPos);
+    }
+  }
+
+  getLastPositionWithOffset(): LJS.Vector2 {
+    return this.lastPosition.copy().add(Global.EngineObjectPosOffset);
   }
 
   kill() {

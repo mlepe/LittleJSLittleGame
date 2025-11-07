@@ -13,7 +13,7 @@ export default class Level {
   id: number;
   name: string = '';
   levelData: number[][] = defaultLevelData;
-  roomsMap: Room[][] = [];
+  roomsMap: (Room | null)[][] = [];
   rooms: Room[] = [];
   startRoom: Room;
   endRoom: Room;
@@ -32,13 +32,13 @@ export default class Level {
   }
 
   createRooms() {
-    let i = 0;
     for (let y = 0; y < this.levelData.length; y++) {
       this.roomsMap[y] = [];
       for (let x = 0; x < this.levelData[y].length; x++) {
         const roomType = this.levelData[y][x];
 
         if (roomType === Global.RoomTypes.NONE) {
+          this.roomsMap[y][x] = null; // Explicitly set null for empty positions
           continue;
         }
 
@@ -53,34 +53,92 @@ export default class Level {
         }
       }
     }
+    console.log('Rooms created:', this.roomsMap);
+  }
+
+  displayCurrentRoomInfo() {
+    if (this.currentRoom) {
+      console.log(
+        `Current Room ID: (${this.currentRoom.id.x}, ${this.currentRoom.id.y}), Type: ${Global.RoomTypes[this.currentRoom.roomType]}\n
+        Doors: ${JSON.stringify(
+          this.currentRoom.doorsDirections,
+          (key, value) => {
+            if (value instanceof Room) {
+              return `${key}: Room(${value.id.x},${value.id.y})`;
+            }
+            return `${key}: None`;
+          }
+        )}`
+      );
+    }
   }
 
   connectRooms() {
     for (let y = 0; y < this.roomsMap.length; y++) {
       for (let x = 0; x < this.roomsMap[y].length; x++) {
         const room = this.roomsMap[y][x];
-        if (room) {
-          // Connect to adjacent rooms
+        if (room !== null) {
+          // Connect to adjacent rooms using correct array indices with proper null checks
           room.up =
-            this.roomsMap[room.position.y - 1]?.[room.position.x] || null;
+            (y > 0 && this.roomsMap[y - 1] && this.roomsMap[y - 1][x]) || null;
           room.down =
-            this.roomsMap[room.position.y + 1]?.[room.position.x] || null;
-          room.left =
-            this.roomsMap[room.position.y][room.position.x - 1] || null;
+            (y < this.roomsMap.length - 1 &&
+              this.roomsMap[y + 1] &&
+              this.roomsMap[y + 1][x]) ||
+            null;
+          room.left = (x > 0 && this.roomsMap[y][x - 1]) || null;
           room.right =
-            this.roomsMap[room.position.y][room.position.x + 1] || null;
+            (x < this.roomsMap[y].length - 1 && this.roomsMap[y][x + 1]) ||
+            null;
 
-          if (room.up) {
-            room.createDoor(LJS.vec2(room.center.x, room.size.y), room.up);
+          // Only create doors where adjacent rooms actually exist
+          console.log(
+            `Room at (${x},${y}) connections:`,
+            `up=${room.up ? `(${room.up.id.x},${room.up.id.y})` : 'none'}`,
+            `down=${room.down ? `(${room.down.id.x},${room.down.id.y})` : 'none'}`,
+            `left=${room.left ? `(${room.left.id.x},${room.left.id.y})` : 'none'}`,
+            `right=${room.right ? `(${room.right.id.x},${room.right.id.y})` : 'none'}`
+          );
+
+          // Adjust door positions to account for center-based EngineObject positioning
+          // Add 0.5 to align with tile centers since EngineObject uses center-based coords
+          const doorPositionsOffset = {
+            up: LJS.vec2(2.5, 4.5), // center x, top wall + 0.5 offset
+            down: LJS.vec2(2.5, 0.5), // center x, bottom wall + 0.5 offset
+            left: LJS.vec2(0.5, 2.5), // left wall + 0.5 offset, center y
+            right: LJS.vec2(4.5, 2.5), // right wall + 0.5 offset, center y
+          };
+
+          const doorPositions = {
+            up: LJS.vec2(2, 4), // center x, top wall + 0.5 offset
+            down: LJS.vec2(2, 0), // center x, bottom wall + 0.5 offset
+            left: LJS.vec2(0, 2), // left wall + 0.5 offset, center y
+            right: LJS.vec2(4, 2), // right wall + 0.5 offset, center y
+          };
+
+          if (room.up !== null) {
+            room.createDoor(doorPositions.up, room.up, 'up');
+            console.log(
+              `Created UP door at (${doorPositions.up.x}, ${doorPositions.up.y})`
+            );
           }
-          if (room.down) {
-            room.createDoor(LJS.vec2(room.center.x, 0), room.down);
+          if (room.down !== null) {
+            room.createDoor(doorPositions.down, room.down, 'down');
+            console.log(
+              `Created DOWN door at (${doorPositions.down.x}, ${doorPositions.down.y})`
+            );
           }
-          if (room.left) {
-            room.createDoor(LJS.vec2(0, room.center.y), room.left);
+          if (room.left !== null) {
+            room.createDoor(doorPositions.left, room.left, 'left');
+            console.log(
+              `Created LEFT door at (${doorPositions.left.x}, ${doorPositions.left.y})`
+            );
           }
-          if (room.right) {
-            room.createDoor(LJS.vec2(room.size.x, room.center.y), room.right);
+          if (room.right !== null) {
+            room.createDoor(doorPositions.right, room.right, 'right');
+            console.log(
+              `Created RIGHT door at (${doorPositions.right.x}, ${doorPositions.right.y})`
+            );
           }
         }
       }
@@ -97,6 +155,7 @@ export default class Level {
       coords = this.center; // Entrance position
     }
     coords = this.center;
+    this.displayCurrentRoomInfo();
     return coords;
   }
 }

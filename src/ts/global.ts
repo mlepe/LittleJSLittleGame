@@ -13,6 +13,7 @@ import * as LJS from 'littlejsengine';
 
 namespace Global {
   export const TileSize = LJS.vec2(16, 16);
+  export const EngineObjectPosOffset = LJS.vec2(0.5, 0.5);
 
   export enum TileType {
     NON_SOLID = 0,

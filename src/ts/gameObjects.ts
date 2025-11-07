@@ -22,6 +22,15 @@ export class GameObject extends LJS.EngineObject {
     super(pos, size, tileInfo);
   }
 
+  getPosWithOffset(): LJS.Vector2 {
+    return this.pos.copy().add(Global.EngineObjectPosOffset);
+  }
+
+  render() {
+    // Render the game object at its current position
+    LJS.drawTile(this.getPosWithOffset(), this.size, this.tileInfo);
+  }
+
   kill() {
     this.destroy();
   }

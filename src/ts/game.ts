@@ -43,6 +43,7 @@ export default class Game {
   center: LJS.Vector2;
   playerDirection: LJS.Vector2;
   //characters: GameCharacter[];
+  static CurrentLevel: Level | null;
 
   constructor(
     width: number,
@@ -74,6 +75,9 @@ export default class Game {
   static GameSize = GAME_SIZE;
   static GameScale = GAME_SCALE;
   static TileSize = TILE_SIZE;
+  getCurrentLevel = () => {
+    return this.currentLevel;
+  };
 
   init() {
     this.timer = new LJS.Timer(0.06);
@@ -211,12 +215,17 @@ export default class Game {
     if (!collides) this.player.move(direction);
   }*/
 
+  setCurrentLevel(level: Level) {
+    this.currentLevel = level;
+    Game.CurrentLevel = level;
+  }
+
   createLevels() {
     for (let i = 0; i < this.levelsCount; i++) {
       const level = new Level(i);
       this.levels.push(level);
     }
 
-    this.currentLevel = this.levels[0];
+    this.setCurrentLevel(this.levels[0]);
   }
 }

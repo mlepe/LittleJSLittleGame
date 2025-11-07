@@ -139,6 +139,10 @@ room.tileLayer.redraw();
 - Doors not showing: Check `room.render()` is called in `game.render()`
 - Doors not triggering: Verify entity added to `Game.Entities[]` and `isSolid = true`
 - Wrong room transitions: Check `gDirection` calculation and `roomsMap` indexing
+- Doors in all directions: Ensure `roomsMap` array indices match level layout and null values are set properly
+- Door misalignment: Check door position calculation against room size and tile boundaries (use `size - 1` for edges)
+- Door positioning offset: EngineObject uses center-based coordinates, add 0.5 to tile positions for proper alignment
+- Wrong door connections: Ensure proper null checking in roomsMap array access with bounds validation
 
 ### File Header Standard
 
