@@ -37,15 +37,19 @@ export default class Level {
       this.roomsMap[y] = [];
       for (let x = 0; x < this.levelData[y].length; x++) {
         const roomType = this.levelData[y][x];
-        if (roomType > 0) {
-          const room = new Room(i++, roomType, LJS.vec2(x, y));
-          this.rooms.push(room);
-          this.roomsMap[y][x] = room;
-          if (roomType === Global.RoomTypes.START) {
-            this.startRoom = room;
-          } else if (roomType === Global.RoomTypes.END) {
-            this.endRoom = room;
-          }
+
+        if (roomType === Global.RoomTypes.NONE) {
+          continue;
+        }
+
+        const room = new Room(LJS.vec2(x, y), roomType, LJS.vec2(x, y), this);
+        this.rooms.push(room);
+        this.roomsMap[y][x] = room;
+
+        if (roomType === Global.RoomTypes.START) {
+          this.startRoom = room;
+        } else if (roomType === Global.RoomTypes.END) {
+          this.endRoom = room;
         }
       }
     }
@@ -57,22 +61,26 @@ export default class Level {
         const room = this.roomsMap[y][x];
         if (room) {
           // Connect to adjacent rooms
-          room.up = this.roomsMap[y - 1]?.[x] || null;
-          room.down = this.roomsMap[y + 1]?.[x] || null;
-          room.left = this.roomsMap[y][x - 1] || null;
-          room.right = this.roomsMap[y][x + 1] || null;
+          room.up =
+            this.roomsMap[room.position.y - 1]?.[room.position.x] || null;
+          room.down =
+            this.roomsMap[room.position.y + 1]?.[room.position.x] || null;
+          room.left =
+            this.roomsMap[room.position.y][room.position.x - 1] || null;
+          room.right =
+            this.roomsMap[room.position.y][room.position.x + 1] || null;
 
           if (room.up) {
-            room.createDoor(LJS.vec2(x, y - 1), room.up);
+            room.createDoor(LJS.vec2(room.center.x, room.size.y), room.up);
           }
           if (room.down) {
-            room.createDoor(LJS.vec2(x, y + 1), room.down);
+            room.createDoor(LJS.vec2(room.center.x, 0), room.down);
           }
           if (room.left) {
-            room.createDoor(LJS.vec2(x - 1, y), room.left);
+            room.createDoor(LJS.vec2(0, room.center.y), room.left);
           }
           if (room.right) {
-            room.createDoor(LJS.vec2(x + 1, y), room.right);
+            room.createDoor(LJS.vec2(room.size.x, room.center.y), room.right);
           }
         }
       }

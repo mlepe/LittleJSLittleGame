@@ -13,10 +13,7 @@
 import * as LJS from 'littlejsengine';
 import Level from './level';
 import Utils from './utils';
-import Room from './room';
-//import { GameCharacter, Player } from './gameCharacter';
 import Global from './global';
-import Entity from './entity';
 import { Player } from './gameCharacter';
 
 const gvec2 = Utils.gvec2;

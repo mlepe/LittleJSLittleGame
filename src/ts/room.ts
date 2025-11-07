@@ -11,7 +11,8 @@
  */
 import * as LJS from 'littlejsengine';
 import Global from './global';
-import Door from './door';
+import { Door } from './gameObjects';
+import Level from './level';
 
 const defaultTileData: number[][] = [
   [1, 1, 1, 1, 1],
@@ -22,7 +23,7 @@ const defaultTileData: number[][] = [
 ];
 
 export default class Room {
-  id: number;
+  id: LJS.Vector2;
   name: string = '';
   roomType: Global.RoomTypes = Global.RoomTypes.REGULAR;
   tilesData: number[][] = defaultTileData;
@@ -35,11 +36,25 @@ export default class Room {
   wallLayer: LJS.TileCollisionLayer;
   doors: Door[] = [];
   position: LJS.Vector2;
+  level: Level;
+  center: LJS.Vector2;
+  size: LJS.Vector2;
 
-  constructor(id: number, roomType: Global.RoomTypes, position: LJS.Vector2) {
+  constructor(
+    id: LJS.Vector2,
+    roomType: Global.RoomTypes,
+    position: LJS.Vector2,
+    level: Level
+  ) {
     this.id = id;
     this.roomType = roomType;
     this.position = position;
+    this.level = level;
+    this.center = LJS.vec2(
+      Math.floor(this.tilesData[0].length / 2),
+      Math.floor(this.tilesData.length / 2)
+    );
+    this.size = LJS.vec2(this.tilesData[0].length, this.tilesData.length);
     this.createLayers();
   }
 
@@ -98,16 +113,10 @@ export default class Room {
   }
 
   createDoor(position: LJS.Vector2, toRoom: Room) {
-    /*const doorIndex = Global.TileIndex.DOOR;
-    const direction = 0;
-    const mirror = false;
-    const color = LJS.WHITE;
-    const data = new LJS.TileLayerData(doorIndex, direction, mirror, color);
-
     // replace with empty tile and empty collision
     this.wallLayer.setData(position, new LJS.TileLayerData());
     this.wallLayer.setCollisionData(position, 0);
     const door = new Door(position, this, toRoom);
-    this.doors.push(door);*/
+    this.doors.push(door);
   }
 }

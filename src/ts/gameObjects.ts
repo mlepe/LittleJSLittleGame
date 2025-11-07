@@ -28,15 +28,22 @@ export class GameObject extends LJS.EngineObject {
 }
 
 export class Door extends GameObject {
-  position: LJS.Vector2;
   toRoom: Room;
   fromRoom: Room;
 
-  constructor(position: LJS.Vector2, fromRoom: Room, toRoom: Room) {
-    super(position, LJS.vec2(1, 1), LJS.tile(Global.TileIndex.DOOR));
+  constructor(pos: LJS.Vector2, fromRoom: Room, toRoom: Room) {
+    let size = LJS.vec2(1, 1);
+    super(pos, size, LJS.tile(Global.TileIndex.DOOR));
     this.fromRoom = fromRoom;
     this.toRoom = toRoom;
+    //this.setCollision(); // make object collide
+    this.setCollision(true, false, false, true);
+    this.renderOrder = 1; // render player on top
+    this.gravityScale = 0;
 
-    this.setCollision();
+    console.log(
+      `Door created from Room ${fromRoom.id} to Room ${toRoom.id} at position`,
+      pos
+    );
   }
 }

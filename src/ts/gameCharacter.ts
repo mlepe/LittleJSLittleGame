@@ -78,11 +78,15 @@ export class Player extends GameCharacter {
     this.renderOrder = 1; // render player on top
     //this.color = LJS.GREEN;
     //this.position = position;
+    this.lastPosition = this.pos.copy();
   }
 
   update() {
+    if (this.lastPosition != this.pos) {
+      console.log('Player position:', this.pos);
+    }
     // apply movement controls
-    const moveInput = LJS.keyDirection().clampLength(1).scale(0.2);
+    const moveInput = LJS.keyDirection().clampLength(1);
     this.velocity = this.velocity.add(moveInput);
 
     // move camera with player

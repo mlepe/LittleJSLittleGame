@@ -8,6 +8,7 @@
   "scripts": {
     "build": "webpack",
     "serve": "webpack serve",
+    "dev": "npm run build && npm run serve",
     "clean": "rm -rf node_modules && rm dist/bundle.js",
     "reinstall": "npm run clean && npm install",
     "rebuild": "npm run clean && npm install && npm run build"
