@@ -21,27 +21,33 @@ export class GameCharacter extends GameObject {
   lastPosition: LJS.Vector2 = LJS.vec2(0, 0);
 
   constructor(
-    position: LJS.Vector2 = LJS.vec2(0, 0),
+    pos: LJS.Vector2 = LJS.vec2(0, 0),
     size: LJS.Vector2 = LJS.vec2(1, 1),
+    tileInfo: LJS.TileInfo = LJS.tile(Global.TileIndex.ENEMY),
     health: number = 100,
     speed: number = 5
   ) {
-    super(position, size);
+    super(pos, size, tileInfo);
     this.health = health;
     this.speed = speed;
     this.renderOrder = 10;
+    this.additiveColor = null;
+    this.color = LJS.WHITE;
+    this.angle = 0;
+    this.setCollision(); // make object collide
+    this.renderOrder = 1; // render player on top
     //this.tileType = Global.TileType.SOLID;
-    this.setCollision(true, false);
+    //this.setCollision(true, false);
   }
 
   update() {
-    if (this.isDead()) {
+    /* if (this.isDead()) {
       // Handle death logic
       return super.update();
     }
 
     const moveInput = this.moveInput.copy();
-    console.log('GameCharacter move input:', moveInput);
+    console.log('GameCharacter move input:', moveInput);*/
 
     // Simple movement logic
     /*if (this.moveInput.x !== 0 || this.moveInput.y !== 0) {
@@ -57,64 +63,44 @@ export class GameCharacter extends GameObject {
     super.update();
   }
 
-  collideWithTile(data: number, position: LJS.Vector2) {
+  /*collideWithTile(data: number, position: LJS.Vector2) {
     if (!data) return false;
     super.collideWithTile(data, position);
-  }
-
-  render() {
-    LJS.drawTile(
-      this.position,
-      this.size,
-      this.tileInfo,
-      this.color,
-      this.angle,
-      this.mirror
-    );
-    super.render();
-  }
+  }*/
 }
 
-export class Player {
-  position: LJS.Vector2;
-  size: LJS.Vector2 = LJS.vec2(1, 1);
-  constructor(position: LJS.Vector2) {
-    /*super(
-      position,
-      LJS.vec2(1, 1),
-      LJS.tile(position, Global.TileSize, Global.TileIndex.PLAYER)
-    );*/
-    this.position = position;
+export class Player extends GameCharacter {
+  //position: LJS.Vector2;
+  //size: LJS.Vector2 = LJS.vec2(1, 1);
+  constructor(pos: LJS.Vector2, size: LJS.Vector2 = LJS.vec2(1, 1)) {
+    super(pos, size, LJS.tile(Global.TileIndex.PLAYER));
+    this.setCollision(); // make object collide
+    this.renderOrder = 1; // render player on top
+    //this.color = LJS.GREEN;
+    //this.position = position;
   }
 
   update() {
-    // Handle player-specific input
-    /*this.moveInput = LJS.keyDirection();
-    console.log('Player move input:', this.moveInput);
-    console.log('Calling super.update() from Player');*/
-    //super.update();
-  }
-  render() {
-    LJS.drawTile(
-      this.position,
-      this.size,
-      LJS.tile(this.position, Global.TileSize, 3, 0)
-    );
-    // Additional rendering for the player
+    // apply movement controls
+    const moveInput = LJS.keyDirection().clampLength(1).scale(0.2);
+    this.velocity = this.velocity.add(moveInput);
+
+    // move camera with player
+    LJS.setCameraPos(this.pos);
   }
 
   kill() {
     console.log('Player has died!');
-    //super.kill();
+    this.destroy();
   }
 }
 export class Enemy extends GameCharacter {
-  constructor(position: LJS.Vector2) {
-    super(position, LJS.vec2(1, 1));
+  constructor(
+    pos: LJS.Vector2,
+    size: LJS.Vector2 = LJS.vec2(1, 1),
+    tileInfo?: LJS.TileInfo
+  ) {
+    super(pos, size, tileInfo);
     this.color = LJS.RED;
-  }
-  render() {
-    super.render();
-    // Additional rendering for the enemy
   }
 }

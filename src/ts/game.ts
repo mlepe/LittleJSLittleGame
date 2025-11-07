@@ -17,6 +17,7 @@ import Room from './room';
 //import { GameCharacter, Player } from './gameCharacter';
 import Global from './global';
 import Entity from './entity';
+import { Player } from './gameCharacter';
 
 const gvec2 = Utils.gvec2;
 
@@ -33,7 +34,7 @@ export default class Game {
   tilesColumns: number;
   tilesRow: number;
   levelsCount: number;
-  player: Entity;
+  player: Player;
   currentLevel: Level;
   levels: (Level | null)[];
   hud: string;
@@ -101,21 +102,31 @@ export default class Game {
 
     let playerTileId: number = 24;
 
-    this.player = new Entity(
-      0,
-      this.center,
-      LJS.vec2(1, 1),
-      LJS.vec2(1, 1),
-      playerTileId,
-      16
-    );
+    // setup level
+    LJS.setCanvasClearColor(LJS.hsl(0.3, 0.2, 0.6));
+    LJS.setObjectDefaultDamping(0.7);
+    this.player = new Player(LJS.vec2(0, 0));
 
-    //this.createLevels();
+    // create collision objects
+    for (let i = 300; i--; ) {
+      const pos = LJS.randInCircle(15 + i, 7);
+      const size = LJS.vec2(LJS.rand(4, 9), LJS.rand(4, 9));
+      const color = LJS.hsl(0.1, 0.5, LJS.rand(0.2));
+      const o = new LJS.EngineObject(
+        pos,
+        size,
+        LJS.tile(pos, LJS.vec2(16)),
+        0,
+        color
+      );
+      o.setCollision(); // make object collide
+      o.mass = 0; // make object have static physics
+    }
+
+    this.createLevels();
     //this.currentLevel.currentRoom.tileLayer.redraw();
-    /*this.player.position = this.currentLevel.switchRoom(
-      this.currentLevel.startRoom
-    );*/
-    LJS.setCameraPos(this.player.position);
+    this.player.pos = this.currentLevel.switchRoom(this.currentLevel.startRoom);
+    LJS.setCameraPos(this.player.pos);
   }
 
   update() {
@@ -127,14 +138,14 @@ export default class Game {
   }
 
   render() {
-    LJS.drawRect(this.center, this.size, new LJS.Color().setHex('#001effff'));
-    LJS.drawTile(
+    //LJS.drawRect(this.center, this.size, new LJS.Color().setHex('#001effff'));
+    /*LJS.drawTile(
       LJS.vec2(10, 10),
       LJS.vec2(1, 1),
       LJS.tile(LJS.vec2(10, 10), LJS.vec2(16, 16), 3, 0),
       LJS.WHITE
     );
-    this.player.render();
+    this.player.render();*/
     /*Game.Entities.forEach((entity) => {
       entity.render();
     });*/
