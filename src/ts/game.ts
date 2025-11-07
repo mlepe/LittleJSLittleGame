@@ -126,7 +126,9 @@ export default class Game {
 
     this.createLevels();
     //this.currentLevel.currentRoom.tileLayer.redraw();
-    this.player.pos = this.currentLevel.switchRoom(this.currentLevel.startRoom);
+    this.player.setPosition(
+      this.currentLevel.switchRoom(this.currentLevel.startRoom)
+    );
     LJS.setCameraPos(this.player.pos);
   }
 

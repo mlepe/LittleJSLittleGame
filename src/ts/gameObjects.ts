@@ -14,12 +14,39 @@ import Room from './room';
 import Global from './global';
 
 export class GameObject extends LJS.EngineObject {
+  useFullGrid: boolean = false; // By default use half-grid for precise positioning
+
   constructor(
     pos: LJS.Vector2,
     size: LJS.Vector2 = LJS.vec2(1, 1),
-    tileInfo?: LJS.TileInfo
+    tileInfo?: LJS.TileInfo,
+    useFullGrid: boolean = false
   ) {
-    super(pos, size, tileInfo);
+    // Snap initial position based on grid type
+    const snappedPos = useFullGrid
+      ? Global.snapPositionToFullGrid(pos)
+      : Global.snapPositionToHalfGrid(pos);
+    super(snappedPos, size, tileInfo);
+
+    this.useFullGrid = useFullGrid;
+  }
+
+  // Override update to enforce position constraints after any movement
+  update() {
+    // Call parent update first
+    super.update();
+
+    // Snap position based on grid type
+    this.pos = this.useFullGrid
+      ? Global.snapPositionToFullGrid(this.pos)
+      : Global.snapPositionToHalfGrid(this.pos);
+  }
+
+  // Method to set position with automatic snapping
+  setPosition(newPos: LJS.Vector2) {
+    this.pos = this.useFullGrid
+      ? Global.snapPositionToFullGrid(newPos)
+      : Global.snapPositionToHalfGrid(newPos);
   }
 
   getPosWithOffset(): LJS.Vector2 {
@@ -35,7 +62,6 @@ export class GameObject extends LJS.EngineObject {
     this.destroy();
   }
 }
-
 export class Door extends GameObject {
   toRoom: Room;
   fromRoom: Room;
@@ -46,7 +72,7 @@ export class Door extends GameObject {
     this.fromRoom = fromRoom;
     this.toRoom = toRoom;
     //this.setCollision(); // make object collide
-    this.setCollision(true, false, false, true);
+    this.setCollision(true, true, false, true);
     this.renderOrder = 1; // render player on top
     this.gravityScale = 0;
 
@@ -54,5 +80,12 @@ export class Door extends GameObject {
       `Door created from Room ${fromRoom.id} to Room ${toRoom.id} at position`,
       pos
     );
+  }
+
+  render() {
+    // Optionally render door differently, e.g., with a special effect
+    //LJS.drawTile(this.getPosWithOffset(), this.size, this.tileInfo);
+
+    LJS.drawTile(this.pos, this.size, this.tileInfo);
   }
 }

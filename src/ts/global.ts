@@ -45,6 +45,156 @@ namespace Global {
     ENEMY = 5,
     PUZZLE = 6,
   }
+
+  class EnvironmentData {
+    public data: { levelLayout: { map: number[][] } };
+    public finalData: { room: number[][][] };
+    constructor() {
+      this.data = {
+        levelLayout: {
+          map: [
+            [0, 1, 0, 0],
+            [0, 1, 2, 1],
+            [0, 1, 0, 1],
+            [0, 0, 0, 3],
+          ],
+        },
+      };
+      this.finalData = {
+        room: [
+          [
+            [1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 2, 1, 1],
+          ],
+          [
+            [1, 1, 2, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 2],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+          ],
+          [
+            [1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 2],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+          ],
+          [
+            [1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1],
+            [2, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+          ],
+          [
+            [1, 1, 2, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+          ],
+          [
+            [1, 1, 2, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 2, 1, 1],
+          ],
+          [
+            [1, 1, , 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+          ],
+        ],
+      };
+    }
+  }
+
+  /**
+   * Snaps a value to the nearest 0.5 increment
+   * @param value The value to snap
+   * @returns The snapped value (0, 0.5, 1, 1.5, 2, etc.)
+   */
+  export function snapToHalfGrid(value: number): number {
+    return Math.round(value * 2) / 2;
+  }
+
+  /**
+   * Snaps a Vector2 position to the nearest 0.5 increments
+   * @param position The position to snap
+   * @returns A new Vector2 with snapped coordinates
+   */
+  export function snapPositionToHalfGrid(position: LJS.Vector2): LJS.Vector2 {
+    return LJS.vec2(snapToHalfGrid(position.x), snapToHalfGrid(position.y));
+  }
+
+  /**
+   * Snaps a value to the nearest full grid increment (1.0)
+   * @param value The value to snap
+   * @returns The snapped value (0, 1, 2, 3, etc.)
+   */
+  export function snapToFullGrid(value: number): number {
+    return Math.round(value);
+  }
+
+  /**
+   * Snaps a Vector2 position to the nearest full grid increments
+   * @param position The position to snap
+   * @returns A new Vector2 with snapped coordinates
+   */
+  export function snapPositionToFullGrid(position: LJS.Vector2): LJS.Vector2 {
+    return LJS.vec2(snapToFullGrid(position.x), snapToFullGrid(position.y));
+  }
+
+  /**
+   * Grid movement directions for discrete movement
+   */
+  export enum GridDirection {
+    NONE = 0,
+    UP = 1,
+    DOWN = 2,
+    LEFT = 3,
+    RIGHT = 4,
+  }
+
+  /**
+   * Converts Vector2 direction to GridDirection enum
+   * @param direction The input direction vector
+   * @returns GridDirection enum value
+   */
+  export function vectorToGridDirection(direction: LJS.Vector2): GridDirection {
+    if (direction.y > 0) return GridDirection.UP;
+    if (direction.y < 0) return GridDirection.DOWN;
+    if (direction.x < 0) return GridDirection.LEFT;
+    if (direction.x > 0) return GridDirection.RIGHT;
+    return GridDirection.NONE;
+  }
+
+  /**
+   * Converts GridDirection to unit Vector2
+   * @param direction The grid direction
+   * @returns Unit vector for the direction
+   */
+  export function gridDirectionToVector(direction: GridDirection): LJS.Vector2 {
+    switch (direction) {
+      case GridDirection.UP:
+        return LJS.vec2(0, 1);
+      case GridDirection.DOWN:
+        return LJS.vec2(0, -1);
+      case GridDirection.LEFT:
+        return LJS.vec2(-1, 0);
+      case GridDirection.RIGHT:
+        return LJS.vec2(1, 0);
+      default:
+        return LJS.vec2(0, 0);
+    }
+  }
 }
 
 export default Global;

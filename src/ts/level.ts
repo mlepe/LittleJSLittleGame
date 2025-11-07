@@ -1,6 +1,7 @@
 import * as LJS from 'littlejsengine';
 import Room from './room';
 import Global from './global';
+import { Door } from './gameObjects';
 
 const defaultLevelData: number[][] = [
   [0, 1, 0, 0],
@@ -145,17 +146,55 @@ export default class Level {
     }
   }
 
-  switchRoom(newRoom: Room): LJS.Vector2 {
+  switchRoom(newRoom: Room, fromDoor?: Door): LJS.Vector2 {
     if (this.currentRoom != null) this.previousRoom = this.currentRoom;
     this.currentRoom = newRoom;
     this.currentRoom.tileLayers[0].redraw();
     this.currentRoom.tileLayers[1].redraw();
-    let coords: LJS.Vector2 = LJS.vec2(0, 0);
-    if (this.previousRoom?.roomType === Global.RoomTypes.START) {
-      coords = this.center; // Entrance position
+
+    let coords: LJS.Vector2;
+
+    if (fromDoor) {
+      // Calculate spawn position based on which door the player came from
+      coords = this.calculateSpawnPosition(newRoom, fromDoor);
+    } else {
+      // Default spawn position (center of room)
+      coords = newRoom.center;
     }
-    coords = this.center;
+
     this.displayCurrentRoomInfo();
     return coords;
+  }
+
+  calculateSpawnPosition(newRoom: Room, fromDoor: Door): LJS.Vector2 {
+    // Find the corresponding door in the new room that connects back to the previous room
+    for (const [direction, door] of Object.entries(newRoom.doorsDirections)) {
+      if (door && door.toRoom === fromDoor.fromRoom) {
+        // Spawn player one tile away from the door in the opposite direction
+        let spawnPos: LJS.Vector2;
+        switch (direction) {
+          case 'up':
+            spawnPos = LJS.vec2(door.pos.x, door.pos.y - 1); // Spawn below the door (full grid)
+            break;
+          case 'down':
+            spawnPos = LJS.vec2(door.pos.x, door.pos.y + 1); // Spawn above the door (full grid)
+            break;
+          case 'left':
+            spawnPos = LJS.vec2(door.pos.x + 1, door.pos.y); // Spawn to the right of door (full grid)
+            break;
+          case 'right':
+            spawnPos = LJS.vec2(door.pos.x - 1, door.pos.y); // Spawn to the left of door (full grid)
+            break;
+          default:
+            spawnPos = newRoom.center;
+        }
+
+        // Ensure spawn position is snapped to full-grid for GameCharacters
+        return Global.snapPositionToFullGrid(spawnPos);
+      }
+    }
+
+    // Fallback to center if no matching door found
+    return Global.snapPositionToFullGrid(newRoom.center);
   }
 }

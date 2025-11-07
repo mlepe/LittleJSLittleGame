@@ -38,10 +38,13 @@ This is a 2D tile-based game built with **LittleJS engine** using TypeScript and
 ### Entity System (`src/ts/entity.ts`)
 
 - **Inheritance**: Extends `LJS.EngineObject` with game-specific properties
-- **Dual positioning**: Both `position` and `gPosition` maintained automatically
+- **Grid-Based Movement**: GameCharacters use full grid alignment (1, 2, 3, etc.) with discrete movement
+- **Position Constraints**: GameObjects use half-grid (0.5 increments), GameCharacters use full-grid (1.0 increments)
+- **Movement System**: Grid-based interpolated movement with collision detection and input handling
 - **Entity types**: `PLAYER`, `ENEMY`, `NPC`, `DOOR` enum for collision handling
 - **Collision detection**: `checkCollisionWithEntityAtPosition()` iterates `Game.Entities[]`
 - **Rendering**: Each entity wraps a `Tile` class for sprite rendering
+- **Position Management**: Use `setPosition()` method for explicit positioning, automatic grid snapping in `update()`
 
 ## Development Workflows
 
@@ -69,6 +72,17 @@ game.debugMode = true; // Shows HUD + minimap
 // Visual debugging helpers
 LJS.drawRect(position, size, color);
 LJS.drawTextScreen(text, position, size);
+
+// Position constraint utilities
+Global.snapToHalfGrid(value); // Snap single value to 0.5 increments
+Global.snapPositionToHalfGrid(vec2); // Snap Vector2 to half-grid
+Global.snapToFullGrid(value); // Snap single value to 1.0 increments
+Global.snapPositionToFullGrid(vec2); // Snap Vector2 to full-grid
+
+// Grid movement utilities
+Global.vectorToGridDirection(direction); // Convert Vector2 to GridDirection
+Global.gridDirectionToVector(direction); // Convert GridDirection to Vector2
+gameCharacter.startGridMovement(direction); // Start discrete grid movement
 ```
 
 ## Key Implementation Patterns
@@ -86,6 +100,12 @@ if (y > 0 && this.roomsMap[y - 1][x] != null) {
 ### Movement with Dual Collision
 
 ```typescript
+// Grid-based movement for GameCharacters
+const direction = Global.vectorToGridDirection(LJS.keyDirection());
+if (player.startGridMovement(direction)) {
+  // Movement started successfully
+}
+
 // Check both tile and entity collisions
 let collidesWithTile = LJS.tileCollisionGetData(player.position.add(direction));
 let collidesWithEntity = player.checkCollisionWithEntityAtPosition(newPos);
@@ -96,6 +116,11 @@ switch (collidesWithEntity?.other?.entityType) {
     // Room transition logic
     break;
 }
+
+// Position management with constraints
+player.setPosition(newPos); // Automatically snaps to full-grid for GameCharacters
+// OR direct assignment (also auto-snapped via GameObject.update())
+player.pos = newPos;
 ```
 
 ### Tile Layer Management
@@ -133,6 +158,8 @@ room.tileLayer.redraw();
 - Doors must be `isSolid = true` to trigger collision detection
 - Door positions use room-local coordinates (0-10, 0-8 for 11x9 rooms)
 - Tile collision data for doors should be set to `0` (passable) in room tile layer
+- Player movement collision detection implemented with door interaction
+- Room switching logic includes proper spawn positioning relative to entry door
 
 **Common Door Problems:**
 

@@ -130,9 +130,11 @@ export default class Room {
   ) {
     // Convert door position to tile coordinates for tile layer manipulation
     const tilePos = LJS.vec2(Math.floor(position.x), Math.floor(position.y));
-    const tilePosWithOffset = LJS.vec2(
-      Math.floor(position.x + 0.5),
-      Math.floor(position.y + 0.5)
+
+    // Door object position should be at center of tile for proper collision detection
+    // Ensure it's snapped to half-grid
+    const doorObjPos = Global.snapPositionToHalfGrid(
+      LJS.vec2(position.x + 0.5, position.y + 0.5)
     );
 
     // Replace wall tile with empty tile and remove collision
@@ -140,12 +142,12 @@ export default class Room {
     this.wallLayer.setCollisionData(tilePos, 0);
 
     // Create door object at the center-based position
-    const door = new Door(tilePosWithOffset, this, toRoom);
+    const door = new Door(doorObjPos, this, toRoom);
     this.doors.push(door);
     this.doorsDirections[direction] = door;
 
     console.log(
-      `Door created at position ${position.x}, ${position.y} (tile: ${tilePos.x}, ${tilePos.y}) going ${direction}`
+      `Door created at position ${doorObjPos.x}, ${doorObjPos.y} (tile: ${tilePos.x}, ${tilePos.y}) going ${direction}`
     );
   }
 }
