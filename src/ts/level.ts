@@ -12,7 +12,6 @@
 import * as LJS from 'littlejsengine'
 import Room from './room'
 import Utils from './utils'
-const gvec2 = Utils.gvec2
 
 const DEFAULT_LEVEL_LAYOUT: number[][] = [
   [0, 1, 0, 0, 0],
@@ -158,13 +157,11 @@ export default class Level {
 
     if (adjacentRooms.up) {
       // Create door at the top
-      let position = LJS.vec2(Math.floor(room.size.x / 2), 0)
       //let direction = LJS.vec2(0, -1);
       room.createDoor(this.roomsMap[up.y][up.x], Utils.CardinalDirection.UP)
     }
     if (adjacentRooms.down) {
       // Create door at the bottom
-      let position = LJS.vec2(Math.floor(room.size.x / 2), room.size.y - 1)
       //let direction = LJS.vec2(0, 0);
       room.createDoor(
         this.roomsMap[down.y][down.x],
@@ -173,7 +170,6 @@ export default class Level {
     }
     if (adjacentRooms.left) {
       // Create door on the left
-      let position = LJS.vec2(0, Math.floor(room.size.y / 2))
       //let direction = LJS.vec2(-1, 0);
       room.createDoor(
         this.roomsMap[left.y][left.x],
@@ -182,7 +178,6 @@ export default class Level {
     }
     if (adjacentRooms.right) {
       // Create door on the right
-      let position = LJS.vec2(room.size.x - 1, Math.floor(room.size.y / 2))
       //let direction = LJS.vec2(1, 0);
       room.createDoor(
         this.roomsMap[right.y][right.x],

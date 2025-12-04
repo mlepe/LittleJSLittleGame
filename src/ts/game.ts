@@ -13,10 +13,7 @@
 import * as LJS from 'littlejsengine'
 import Tile from './tile'
 import Level from './level'
-import Utils from './utils'
 import Room from './room'
-
-const gvec2 = Utils.gvec2
 
 export default class Game {
   width: number
@@ -178,7 +175,6 @@ export default class Game {
     const fontStyleopt = 'normal'
     const maxWidthopt = 1000
     const angleopt = 0
-    const contextopt = null
 
     //LJS.drawTextOverlay(this.debugHud, LJS.vec2(0), 1, coloropt);
 
@@ -205,13 +201,8 @@ export default class Game {
   }
 
   handleInput() {
-    const up = LJS.vec2(0, 1)
-    const down = LJS.vec2(0, -1)
-    const left = LJS.vec2(-1, 0)
-    const right = LJS.vec2(1, 0)
     //console.log("Time delta: ", LJS.timeDelta);
     let direction = LJS.keyDirection()
-    let gDirection = LJS.vec2(direction.x, -direction.y)
     //console.log("Direction: ", direction);
 
     //console.log("direction: ", direction);
